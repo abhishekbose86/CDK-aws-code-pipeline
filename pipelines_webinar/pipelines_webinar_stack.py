@@ -3,12 +3,9 @@ from constructs import Construct
 from aws_cdk import ( 
 Stack,
 CfnOutput,
-Duration,
 aws_lambda as lmb,
 aws_apigateway as apigw,
-aws_codedeploy as codedeploy,
-aws_cloudwatch as cloudwatch
- )
+)
 
 class PipelinesWebinarStack(Stack):
 
@@ -23,30 +20,9 @@ class PipelinesWebinarStack(Stack):
             handler='handler.handler',
             code=lmb.Code.from_asset(path.join(this_dir, 'lambda')))
 
-        alias = lmb.Alias(self, 'HandlerAlias',
-            alias_name='Current',
-            version=handler.current_version)
-
         gw = apigw.LambdaRestApi(self, 'Gateway',
             description='Endpoint for a simple Lambda-powered web service',
-            handler=alias)
-
-        failure_alarm = cloudwatch.Alarm(self, 'FailureAlarm',
-            metric=cloudwatch.Metric(
-                metric_name='5XXError',
-                namespace='AWS/ApiGateway',
-                dimensions={
-                    'ApiName': 'Gateway',
-                },
-                statistic='Sum',
-                period=Duration.minutes(1)),
-            threshold=1,
-            evaluation_periods=1)
-
-        codedeploy.LambdaDeploymentGroup(self, 'DeploymentGroup',
-            alias=alias,
-            deployment_config=codedeploy.LambdaDeploymentConfig.CANARY_10_PERCENT_10_MINUTES,
-            alarms=[failure_alarm])
+            handler=handler.current_version)
 
         self.url_output = CfnOutput(self, 'Url',
             value=gw.url)

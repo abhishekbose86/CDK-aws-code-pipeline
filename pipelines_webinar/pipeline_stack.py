@@ -3,7 +3,6 @@ from aws_cdk import (
 Stack,
 SecretValue,
 aws_codepipeline as codepipeline,
-aws_codepipeline_actions as cpactions,
 pipelines
 )
 
@@ -16,10 +15,8 @@ class PipelineStack(Stack):
     super().__init__(scope, id, **kwargs)
 
     source_artifact = codepipeline.Artifact()
-    cloud_assembly_artifact = codepipeline.Artifact()
-
+    
     pipeline = pipelines.CodePipeline(self, 'Pipeline',
-      cloud_assembly_artifact=cloud_assembly_artifact,
       pipeline_name='WebinarPipeline',
 
       synth=pipelines.ShellStep("Synth",
@@ -36,20 +33,8 @@ class PipelineStack(Stack):
       'account': APP_ACCOUNT,
       'region': 'us-east-2',
     })
-    pre_prod_stage = pipeline.add_application_stage(pre_prod_app)
-    pre_prod_stage.add_actions(pipelines.ShellScriptAction(
-      action_name='Integ',
-      run_order=pre_prod_stage.next_sequential_run_order(),
-      additional_artifacts=[source_artifact],
-      commands=[
-        'pip install -r requirements.txt',
-        'pytest integtests',
-      ],
-      use_outputs={
-        'SERVICE_URL': pipeline.stack_output(pre_prod_app.url_output)
-      }))
-
-    pipeline.add_application_stage(WebServiceStage(self, 'Prod', env={
+    pipeline.add_stage(pre_prod_app)
+    pipeline.add_stage(WebServiceStage(self, 'Prod', env={
       'account': APP_ACCOUNT,
       'region': 'us-east-2',
     }))
