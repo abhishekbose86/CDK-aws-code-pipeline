@@ -1,14 +1,18 @@
 from os import path
+from constructs import Construct
+from aws_cdk import ( 
+Stack,
+CfnOutput,
+Duration,
+aws_lambda as lmb,
+aws_apigateway as apigw,
+aws_codedeploy as codedeploy,
+aws_cloudwatch as cloudwatch
+ )
 
-from aws_cdk import core
-import aws_cdk.aws_lambda as lmb
-import aws_cdk.aws_apigateway as apigw
-import aws_cdk.aws_codedeploy as codedeploy
-import aws_cdk.aws_cloudwatch as cloudwatch
+class PipelinesWebinarStack(Stack):
 
-class PipelinesWebinarStack(core.Stack):
-
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # The code that defines your stack goes here
@@ -35,7 +39,7 @@ class PipelinesWebinarStack(core.Stack):
                     'ApiName': 'Gateway',
                 },
                 statistic='Sum',
-                period=core.Duration.minutes(1)),
+                period=Duration.minutes(1)),
             threshold=1,
             evaluation_periods=1)
 
@@ -44,6 +48,6 @@ class PipelinesWebinarStack(core.Stack):
             deployment_config=codedeploy.LambdaDeploymentConfig.CANARY_10_PERCENT_10_MINUTES,
             alarms=[failure_alarm])
 
-        self.url_output = core.CfnOutput(self, 'Url',
+        self.url_output = CfnOutput(self, 'Url',
             value=gw.url)
 
