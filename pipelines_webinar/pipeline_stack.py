@@ -1,6 +1,7 @@
 from constructs import Construct
 from aws_cdk import ( 
 Stack,
+Environment,
 SecretValue,
 aws_codepipeline as codepipeline,
 pipelines
@@ -14,8 +15,7 @@ class PipelineStack(Stack):
   def __init__(self, scope: Construct, id: str, **kwargs):
     super().__init__(scope, id, **kwargs)
 
-    source_artifact = codepipeline.Artifact()
-    
+ 
     pipeline = pipelines.CodePipeline(self, 'Pipeline',
       pipeline_name='WebinarPipeline',
 
@@ -29,15 +29,8 @@ class PipelineStack(Stack):
         ]
     ))
 
-    pre_prod_app = WebServiceStage(self, 'Pre-Prod', env={
-      'account': APP_ACCOUNT,
-      'region': 'us-east-2',
-    })
+    pre_prod_app = WebServiceStage(self, 'Pre-Prod', env = Environment ('account': APP_ACCOUNT,'region': 'us-east-2'))
     pipeline.add_stage(pre_prod_app)
-    pipeline.add_stage(WebServiceStage(self, 'Prod', env={
-      'account': APP_ACCOUNT,
-      'region': 'us-east-2',
-    }))
 
 
 
