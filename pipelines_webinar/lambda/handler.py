@@ -1,5 +1,5 @@
 def handler(event, context):
   return {
-    'body': 'Oops',
-    'statusCode': '500'
+    'body': 'CDK Pipeline Rocks!',
+    'statusCode': '200'
   }
